@@ -255,6 +255,7 @@ class Decode{
 
         if(locA == ibs.pWrite && ibs.pWrite!=0 && ibs.enablePipe == true){
             // if pipelining and data forwarding is true
+            ibs.dataHazardNumber++;
             if(ibs.enableDF == true){
                 if(ibs.pInst == "lw" || ibs.pInst == "lb" || ibs.pInst == "lh"){
                     stallA = true;
@@ -271,6 +272,7 @@ class Decode{
             }
         }
         else if(locA == ibs.ppWrite && ibs.ppWrite != 0 && ibs.enablePipe == true){
+            ibs.dataHazardNumber++;
             if(ibs.enableDF == true){
                 // for general instruction, no load exceptions are here
                 stallA = false;
@@ -293,6 +295,7 @@ class Decode{
 
         if(insType == 1 || insType ==3){
             if(locB == ibs.pWrite && ibs.pWrite !=0 && ibs.enablePipe == true){
+                ibs.dataHazardNumber++;
                 if(ibs.enableDF == true){
                     if(ibs.pInst == "lw" || ibs.pInst == "lb" || ibs.pInst == "lh"){
                         stallB = true;
@@ -309,6 +312,7 @@ class Decode{
                 }
             }
             else if(locB == ibs.ppWrite && ibs.ppWrite != 0 && ibs.enablePipe == true){
+                ibs.dataHazardNumber++;
                 if(ibs.enableDF == true){
                     stallB = false;
                     ibs.RB.writeInt(ibs.RY.readInt());
@@ -375,6 +379,7 @@ class Decode{
 
         if(insType == 4){
             if(locC == ibs.pWrite && ibs.pWrite !=0 && ibs.enablePipe == true){
+                ibs.dataHazardNumber++;
                 if(ibs.enableDF == true){
                     if(ibs.pInst == "lw" || ibs.pInst == "lb" || ibs.pInst == "lh"){
                         stallC = true;
@@ -390,6 +395,7 @@ class Decode{
                 }
             }
             else if(locC == ibs.ppWrite && ibs.ppWrite !=0 && ibs.enablePipe == true){
+                ibs.dataHazardNumber++;
                 if(ibs.enableDF == true){
                     stallC = false;
                     ibs.RMD.writeInt(ibs.RY.readInt());
@@ -459,19 +465,24 @@ class Decode{
                 state = (rau >= rbu) ? 1 : 0;
             }
 
-            if(ibs.taken == true && state == false){
+
+            if(ibs.btb[ibs.PC-1] == true && state == false){
                 ibs.mispredNumber++;
                 ibs.isMispred = true;
                 // Implement flush logic
                 // Put ba_def in PC
                 ibs.nextPC = ibs.branch_address_def;
+                //update btb
+                ibs.btb[ibs.PC-1] = state;
             }
-            else if(ibs.taken == false && state == true){
+            else if(ibs.btb[ibs.PC-1] == false && state == true){
                 ibs.mispredNumber++;
                 ibs.isMispred = true;
                 // Implement flush logic
                 // Put ba in PC
                 ibs.nextPC = ibs.branch_address;
+                //update btb
+                ibs.btb[ibs.PC-1] = state;
             }
             else{
                 //Sab sahi hai bero

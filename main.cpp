@@ -30,7 +30,7 @@ void print(int i, InterStateBuffers &, Registry_File &);
 void updateISB(InterStateBuffers &);
 void updateAfterDecoder(InterStateBuffers &);
 void updateIfStall(InterStateBuffers &);
-void printSummary(InterStateBuffers &,int lineno);
+void printSummary(InterStateBuffers &);
 
 int main(){
 
@@ -145,6 +145,8 @@ int main(){
 			oFile2 <<lineNo<<" "<< line << endl;
 		}
 		oFile<<lineNo+1<<" 0 0"<<endl;
+		isb.lines = lineNo;
+		isb.init_btb();
 	}
 	iFile.close();
 	oFile.close();
@@ -239,7 +241,7 @@ int main(){
 		cout<<" Final register values :\n";	
 		rFile.print();
 		cout<<" Summary :\n";
-		printSummary(isb,lineNo);
+		printSummary(isb);
 	}
 
 // If pipeline is enabled with data forwarding
@@ -354,7 +356,7 @@ int main(){
 		cout<<" Final register values :\n";	
 		rFile.print();
 		cout<<" Summary :\n";
-		printSummary(isb,lineNo);
+		printSummary(isb);
 	}
 
 	// If pipeline is enabled without data forwarding
@@ -468,7 +470,7 @@ int main(){
 		cout<<" Final register values :\n";	
 		rFile.print();
 		cout<<" Summary :\n";
-		printSummary(isb,lineNo);
+		printSummary(isb);
 	}
 	return 0;
 }
@@ -577,19 +579,19 @@ void print(int i, InterStateBuffers &isb, Registry_File &rFile){
 	cout<<endl;
 }
 
-void printSummary(InterStateBuffers &isb,int lineno){
-	cout<<" Total Cycles \t\t:\t"<<isb.totalCycles<<endl;
-	cout<<" Total Instructions \t\t:\t"<<lineno<<endl;
-	cout<<" CPI \t\t\t\t:\t"<<(float)(isb.totalCycles/lineno)<<endl;
-	cout<<" Total Data Transfer Instructions :\t"<<<<endl;
-	cout<<" Total ALU Instructions :\t"<<<<endl;
-	cout<<" Total Control Instructions :\t"<<<<endl;
-	cout<<" Total Stalls \t\t:\t"<<isb.numStall<<endl;
-	cout<<" Number of Data Hazards :\t"<<<<endl;
-	cout<<" Number of Control Hazards :\t"<<<<endl;
+void printSummary(InterStateBuffers &isb){
+	cout<<" Total Cycles \t\t\t:\t"<<isb.totalCycles<<endl;
+	cout<<" Total Instructions \t\t:\t"<<isb.lines<<endl;
+	cout<<" CPI \t\t\t\t:\t"<<((float)isb.totalCycles/isb.lines)<<endl;
+	// cout<<" Total Data Transfer Instructions :\t"<<<<endl;
+	// cout<<" Total ALU Instructions :\t"<<<<endl;
+	// cout<<" Total Control Instructions :\t"<<<<endl;
+	cout<<" Total Stalls \t\t\t:\t"<<isb.numStall + isb.mispredNumber*2<<endl;
+	cout<<" Number of Data Hazards :\t"<<isb.dataHazardNumber<<endl;
+	// cout<<" Number of Control Hazards :\t"<<<<endl;
 	cout<<" Total Branch Misprediction \t:\t"<<isb.mispredNumber<<endl;
-	cout<<" Stalls due to Data Hazard :\t"<<<<endl;
-	cout<<" Stalls due to Control Hazard :\t"<<<<endl;
+	cout<<" Stalls due to Data Hazard :\t"<<isb.numStall<<endl;
+	cout<<" Stalls due to Control Hazard :\t"<<isb.mispredNumber*2<<endl;
 }
 
 void updateAfterDecoder(InterStateBuffers &isb){
