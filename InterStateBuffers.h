@@ -52,6 +52,7 @@ class InterStateBuffers{
 		int numStall;
 		int totalCycles;
 		int lines;
+		int instFetchNumber;
 
 		int hazard_type; /* 0 No Branch , 1 Jal ,  2 Jalr ,3 branch */
 		int branch_address_def;
@@ -65,6 +66,9 @@ class InterStateBuffers{
 
 		vector<bool> btb;
 		int mispredNumber;
+		int aluInstNumber;
+		int ctrlInstNumber;
+		int dataInstNumber;
 		int dataHazardNumber;
 		bool isMispred;
 		int nextPC;
@@ -114,6 +118,7 @@ class InterStateBuffers{
 			isMem = false;
 			write_back_location = -1;
 			lines = 0;
+			instFetchNumber = 0;
 
 			enablePipe = true;
 			enableDF = true; 
@@ -152,6 +157,9 @@ class InterStateBuffers{
 			mispredNumber = 0;
 			isMispred = false;
 			nextPC = 0;
+			aluInstNumber = 0;
+			ctrlInstNumber = 0;
+			dataInstNumber = 0;
 
 			pWrite = 0;
 			ppWrite = 0;

@@ -31,13 +31,14 @@ void updateISB(InterStateBuffers &);
 void updateAfterDecoder(InterStateBuffers &);
 void updateIfStall(InterStateBuffers &);
 void printSummary(InterStateBuffers &);
+// void countInst(InterStateBuffers &,string basic);
 
 int main(){
 
 	RType rTypeInsObj;
 	IType iTypeInsObj;
 	SBType sbTypeInsObj;
-  SType sTypeInsObj;
+    SType sTypeInsObj;
 	UJType ujTypeInsObj;
 	UType uTypeInsObj;
 
@@ -59,9 +60,11 @@ int main(){
 	rTypeInsObj.initialise(dir + "RType.txt");
 	iTypeInsObj.initialise(dir + "IType.txt");
 	sbTypeInsObj.initialise(dir + "SBType.txt");
-  sTypeInsObj.initialise(dir + "SType.txt");
+    sTypeInsObj.initialise(dir + "SType.txt");
 	ujTypeInsObj.initialise(dir + "UJType.txt");
 	uTypeInsObj.initialise(dir + "UType.txt");
+
+	//count number of alu,control,data transfer instructions
 
 	
 	MemoryAccess memAccess;
@@ -235,11 +238,13 @@ int main(){
 			isb.resetAll();
 
 			if(isb.printRegFile) print(i,isb,rFile);
+			isb.totalCycles = i-1;
 		}
-		isb.totalCycles = i-1;
+		
 		cout<<"\n\n---------------- Code executed succesfully ----------------\n\n"<<endl;
 		cout<<" Final register values :\n";	
 		rFile.print();
+		// countInst(isb,basicCodeFileName);
 		cout<<" Summary :\n";
 		printSummary(isb);
 	}
@@ -258,21 +263,31 @@ int main(){
 				break;
 			
 			if(i==1){
+				// cout<<"PC:"<<isb.PC<<"\t";
 				if(!end){
 					fetch.get(isb,rFile);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
+					// cout<<"PC:"<<isb.PC<<"\n";
 				}
 				updateISB(isb);
+				// isb.totalCycles++;
+				// cout<<"boom"<<isb.PC<<"\t";
 			}
 			else if(i==2) {
+				// cout<<"PC:"<<isb.PC<<"\t";
 				decode.decoder(isb,rFile);
 				if(isb.stall){
 					updateIfStall(isb);
 					continue;
 				}
 				updateAfterDecoder(isb);
-				if(isb.isMispred) iag.jumpPC(isb,isb.nextPC);
+				if(isb.isMispred)iag.jumpPC(isb,isb.nextPC);
+				// cout<<"PC:"<<isb.PC<<"\t";
 				if(!end){
 					if(isb.hazard_type == 2){
 						iag.jumpPC(isb, isb.branch_address);
@@ -280,11 +295,19 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
+					// cout<<"PC:"<<isb.PC<<"\n";
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
+				// cout<<"boom"<<isb.PC<<"\t";
 			}
 			else if(i==3) {
+				// cout<<"PC:"<<isb.PC<<"\t";
 				if(!isb.stall) alu.compute(isb);
 				decode.decoder(isb,rFile);
 				if(isb.stall){
@@ -293,6 +316,7 @@ int main(){
 				}
 				updateAfterDecoder(isb);
 				if(isb.isMispred) iag.jumpPC(isb,isb.nextPC);
+				// cout<<"PC:"<<isb.PC<<"\t";
 				if(!end){
 					if(isb.hazard_type == 2){
 						iag.jumpPC(isb, isb.branch_address);
@@ -300,11 +324,19 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
+					// cout<<"PC:"<<isb.PC<<"\n";
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
+				// cout<<"boom"<<isb.PC<<"\t";
 			}
 			else if(i==4) {
+				// cout<<"PC:"<<isb.PC<<"\t";
 				memory(isb, memAccess, muxy);
 				if(!isb.stall) alu.compute(isb);
 				decode.decoder(isb,rFile);
@@ -314,6 +346,7 @@ int main(){
 				}
 				updateAfterDecoder(isb);
 				if(isb.isMispred) iag.jumpPC(isb,isb.nextPC);
+				// cout<<"PC:"<<isb.PC<<"\t";
 				if(!end){
 					if(isb.hazard_type == 2){
 						iag.jumpPC(isb, isb.branch_address);
@@ -321,11 +354,19 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
+					// cout<<"PC:"<<isb.PC<<"\n";
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
+				// cout<<"boom"<<isb.PC<<"\t";
 			}
 			else{
+				// cout<<"PC:"<<isb.PC<<"\t";
 				writeBack(isb, regUpdate, rFile);
 				memory(isb, memAccess, muxy);
 				if(!isb.stall) alu.compute(isb);
@@ -336,6 +377,7 @@ int main(){
 				}
 				updateAfterDecoder(isb);
 				if(isb.isMispred) iag.jumpPC(isb,isb.nextPC);
+				// cout<<"PC:"<<isb.PC<<"\t";
 				if(!end){
 					if(isb.hazard_type == 2){
 						iag.jumpPC(isb, isb.branch_address);
@@ -343,9 +385,16 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
+					// cout<<"PC:"<<isb.PC<<"\n";
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
+				// cout<<"boom"<<isb.PC<<"\t";
 			}
 			if(isb.IR.readInt() == 0 )
 				end = true;
@@ -355,6 +404,7 @@ int main(){
 		cout<<"\n\n---------------- Code executed succesfully ----------------\n\n"<<endl;
 		cout<<" Final register values :\n";	
 		rFile.print();
+		// countInst(isb,basicCodeFileName);
 		cout<<" Summary :\n";
 		printSummary(isb);
 	}
@@ -375,9 +425,14 @@ int main(){
 				if(!end){
 					fetch.get(isb,rFile);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
 				}
 				updateISB(isb);
+				// isb.totalCycles++;
 			}
 			else if(i==2) {
 				decode.decoder(isb,rFile);
@@ -394,9 +449,14 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
 			}
 			else if(i==3) {
 				if(!isb.stall) alu.compute(isb);
@@ -414,9 +474,14 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
 			}
 			else if(i==4) {
 				memory(isb, memAccess, muxy);
@@ -435,9 +500,14 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
 			}
 			else{
 				writeBack(isb, regUpdate, rFile);
@@ -457,9 +527,14 @@ int main(){
 					fetch.get(isb,rFile);
 					updateISB(isb);
 					if(!isb.hazard_type) iag.update(isb);
+					else if(isb.hazard_type == 3){
+						if(isb.btb[isb.PC-1]) iag.jumpPC(isb,isb.branch_address);
+						else iag.update(isb);
+					}
 					else iag.jumpPC(isb,isb.branch_address);
 				}
 				if(end)	updateISB(isb);
+				// isb.totalCycles++;
 			}
 			if(isb.IR.readInt() == 0 )
 				end = true;
@@ -469,6 +544,7 @@ int main(){
 		cout<<"\n\n---------------- Code executed succesfully ----------------\n\n"<<endl;
 		cout<<" Final register values :\n";	
 		rFile.print();
+		// countInst(isb,basicCodeFileName);
 		cout<<" Summary :\n";
 		printSummary(isb);
 	}
@@ -580,18 +656,19 @@ void print(int i, InterStateBuffers &isb, Registry_File &rFile){
 }
 
 void printSummary(InterStateBuffers &isb){
-	cout<<" Total Cycles \t\t\t:\t"<<isb.totalCycles<<endl;
-	cout<<" Total Instructions \t\t:\t"<<isb.lines<<endl;
-	cout<<" CPI \t\t\t\t:\t"<<((float)isb.totalCycles/isb.lines)<<endl;
-	// cout<<" Total Data Transfer Instructions :\t"<<<<endl;
-	// cout<<" Total ALU Instructions :\t"<<<<endl;
-	// cout<<" Total Control Instructions :\t"<<<<endl;
-	cout<<" Total Stalls \t\t\t:\t"<<isb.numStall + isb.mispredNumber*2<<endl;
-	cout<<" Number of Data Hazards :\t"<<isb.dataHazardNumber<<endl;
-	// cout<<" Number of Control Hazards :\t"<<<<endl;
-	cout<<" Total Branch Misprediction \t:\t"<<isb.mispredNumber<<endl;
-	cout<<" Stalls due to Data Hazard :\t"<<isb.numStall<<endl;
-	cout<<" Stalls due to Control Hazard :\t"<<isb.mispredNumber*2<<endl;
+	cout<<" Total Cycles \t\t\t\t\t:\t"<<isb.totalCycles<<endl;
+	cout<<" Total Instructions in Code \t\t\t:\t"<<isb.lines<<endl;
+	cout<<" Total Instructions Fetched \t\t\t:\t"<<isb.instFetchNumber<<endl;
+	cout<<" CPI \t\t\t\t\t\t:\t"<<((float)isb.totalCycles/isb.instFetchNumber)<<endl;
+	cout<<" Total Data Transfer Instructions Fetched \t:\t"<<isb.dataInstNumber<<endl;
+	cout<<" Total ALU Instructions Fetched \t\t:\t"<<isb.aluInstNumber<<endl;
+	cout<<" Total Control Instructions Fetched\t\t:\t"<<isb.ctrlInstNumber<<endl;
+	cout<<" Total Stalls \t\t\t\t\t:\t"<<isb.numStall + isb.mispredNumber<<endl;
+	cout<<" Number of Data Hazards \t\t\t:\t"<<isb.dataHazardNumber<<endl;
+	cout<<" Number of Control Hazards \t\t\t:\t"<<isb.mispredNumber<<endl;
+	cout<<" Total Branch Misprediction \t\t\t:\t"<<isb.mispredNumber<<endl;
+	cout<<" Stalls due to Data Hazard \t\t\t:\t"<<isb.numStall<<endl;
+	cout<<" Stalls due to Control Hazard \t\t\t:\t"<<isb.mispredNumber<<endl;
 }
 
 void updateAfterDecoder(InterStateBuffers &isb){
@@ -613,3 +690,63 @@ void updateIfStall(InterStateBuffers &isb){
 	isb.isMemW = isb.isMemM;
 	isb.isMemM = isb.isMemE;
 }
+
+// void countInst(InterStateBuffers &isb, string basic){
+// 	// ifstream iFile(basic.c_str(), ios :: in);
+
+// 	string datafile = "datainst.txt";
+// 	string ctrlfile = "ctrlinst.txt";
+// 	string alufile = "aluinst.txt";
+// 	ifstream iFiledata(datafile.c_str(), ios::in);
+// 	ifstream iFilectrl(ctrlfile.c_str(), ios::in);
+// 	ifstream iFilealu(alufile.c_str(), ios::in);
+// 	vector <string> datainstructions;
+// 	vector <string> ctrlinstructions;
+// 	vector <string> aluinstructions;
+
+//         string line;
+        
+//         while(getline(iFiledata,line)) {
+//             stringstream ss(line);
+//             string token;
+//             ss >> token;
+//             datainstructions.push_back(token);
+//         }
+// 		while(getline(iFilectrl,line)) {
+//             stringstream ss(line);
+//             string token;
+//             ss >> token;
+//             ctrlinstructions.push_back(token);
+//         }
+// 		while(getline(iFilealu,line)) {
+//             stringstream ss(line);
+//             string token;
+//             ss >> token;
+//             aluinstructions.push_back(token);
+//         }
+// 		iFiledata.close();
+// 		iFilectrl.close();
+// 		iFilealu.close();
+// 	ifstream file(basic.c_str(), ios::in);
+// 	while(getline(file,line)){
+// 		stringstream ss(line);
+// 		string token;
+// 		ss >> token;
+// 		ss >> token;
+// 		// cout<<token<<"\t";
+// 		vector <string> :: iterator it1 = find(datainstructions.begin(),datainstructions.end(),token);
+// 		if(it1 != datainstructions.end()){
+// 			isb.dataInstNumber++;
+// 		}
+// 		vector <string> :: iterator it2 = find(ctrlinstructions.begin(),ctrlinstructions.end(),token);
+// 		if(it2 != ctrlinstructions.end()){
+// 			isb.ctrlInstNumber++;
+// 		}
+// 		vector <string> :: iterator it3 = find(aluinstructions.begin(),aluinstructions.end(),token);
+// 		if(it3 != aluinstructions.end()){
+// 			isb.aluInstNumber++;
+// 		}
+// 		// cout<<isb.dataInstNumber<<"\t"<<isb.ctrlInstNumber<<"\t"<<isb.aluInstNumber<<"\n";
+// 	}
+// 	file.close();
+// }
