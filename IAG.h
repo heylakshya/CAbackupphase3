@@ -34,8 +34,15 @@ class IAG{
 		}
 
 		void jumpPC(InterStateBuffers &isb,int branchTarget){
-			isb.PC = branchTarget;
-			isb.return_address = isb.PC+1;
+			if(isb.btb[PC-1]){
+				isb.PC = branchTarget;
+				isb.return_address = isb.PC+1;
+			}
+			else{
+				isb.PC++;
+				isb.return_address = isb.PC+1;
+			}
+			
 			return;
 		}
 };
