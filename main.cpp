@@ -658,8 +658,8 @@ void print(int i, InterStateBuffers &isb, Registry_File &rFile){
 void printSummary(InterStateBuffers &isb){
 	cout<<" Total Cycles \t\t\t\t\t:\t"<<isb.totalCycles<<endl;
 	cout<<" Total Instructions in Code \t\t\t:\t"<<isb.lines<<endl;
-	cout<<" Total Instructions Fetched \t\t\t:\t"<<isb.instFetchNumber<<endl;
-	cout<<" CPI \t\t\t\t\t\t:\t"<<((float)isb.totalCycles/isb.instFetchNumber)<<endl;
+	cout<<" Total Instructions Fetched \t\t\t:\t"<<(isb.instFetchNumber-1)<<endl;
+	cout<<" CPI \t\t\t\t\t\t:\t"<<((float)isb.totalCycles/(isb.instFetchNumber-1))<<endl;
 	cout<<" Total Data Transfer Instructions Fetched \t:\t"<<isb.dataInstNumber<<endl;
 	cout<<" Total ALU Instructions Fetched \t\t:\t"<<isb.aluInstNumber<<endl;
 	cout<<" Total Control Instructions Fetched\t\t:\t"<<isb.ctrlInstNumber<<endl;
